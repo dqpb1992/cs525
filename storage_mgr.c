@@ -101,7 +101,7 @@ RC createPageFile(char *fileName){
         return RC_FILE_NOT_FOUND;
     }
     //Question(by Pingyu Xue):the file is create by ourself.  need check or not?
-    //Answer(by ):
+    //Answer(by Uday Tak): Needed. good programing practice
     
     FILE *newPageFile;
     newPageFile= fopen(fileName, "w+");
@@ -112,7 +112,7 @@ RC createPageFile(char *fileName){
     }
     
 //     If  create the page success ,then ,set the pointer of the page.
-//     do not waste the memeory!
+//     do not waste the memeory! -- Uday : ok
     
     char *newPage;
     newPage = (char *) calloc(PAGE_SIZE, sizeof(char));
@@ -229,7 +229,7 @@ RC openPageFile (char *fileName, SM_FileHandle *fHandle){
             if( pageSize != 0){
                 
                 size_t modPageNum = pageSize/pageSize; 
-                /*(Question : Uday Tak) pageSize/pageSize will always return 1. so need to make changes in the above statement.
+                /*(Question : Uday Tak) pageSize/pageSize will always return 1. so need to use some different logic.
                     (Answer : )
                 */
                 
@@ -364,7 +364,7 @@ RC destroyPageFile (char *fileName)
 }
 
     //Question(by Pingyu Xue):  remove ()? free memory ,should check again or not?
-    //Answer(by ):
+    //Answer(by Uday TAk): No. reason is Same a as above
 
 
 
@@ -404,19 +404,19 @@ RC readBlock(int pageNum, SM_FileHandle *fhandle, SM_PageHandle memPage)
     
     if (pageNum >= 0 && fhandle->totalNumPages > pageNum) { // if pageNum only >0 , readFirstPage() will be error! (add by PyX  9/21)
         seekpostion=fseek(fhandle->mgmtInfo, sizeof(char)*PAGE_SIZE*pageNum, SEEK_SET);
-        // Q1:??? offset= sizeof(char)  || Do we need the sizeof(char)?
-        // Q4:??? why fandle->mamtInfo can be used for FILE *point?
+        // Q1:??? offset= sizeof(char)  || Do we need the sizeof(char)? Ans : (Uday) - yes. 1.good programing practice 2. instead of char in future u might use nchar
+        // Q4:??? why fandle->mamtInfo can be used for FILE *point? Ans:(Uday) - file pointer is different than filename 
         
         if (seekpostion == 0){
             readStatement = fread(memPage, sizeof(char), PAGE_SIZE, fhandle->mgmtInfo);
         // Q2:???  size_t sizeof(char)  ||
             if (readStatement != 0){ 
                 // if readStatment only ==  PAGE_SIZE, how about the file material less than a PAGE_SIZE?
-                // Q5: ??? Should the read material be the size of PAGE_SIZE ?　    09/21
+                // Q5: ??? Should the read material be the size of PAGE_SIZE ?　    09/21 Ans:( Uday) : yes read material always of size page
                 fhandle->curPagePos = pageNum;
                 return RC_OK;
             }
-        // Q3: how to check the fread() have the right result ?
+        // Q3: how to check the fread() have the right result ? A:(uday) compare the length may be
             else {
                 return RC_READ_FAILED;
             }
@@ -636,7 +636,7 @@ RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
     int setSuccess;
     size_t writeState;
     
-    if (fhandle == NULL) {
+    if (fHandle == NULL) {
         return RC_FILE_HANDLE_NOT_INIT;
     }
 

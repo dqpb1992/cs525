@@ -1,18 +1,15 @@
 //
 //  storage_mgr.c
-//  testcode_2_0920
+//  testcode_1_0919
 //
-//  Created by Pingyu Xue on 9/21/16.
+//  Created by Pingyu Xue on 9/19/16.
 //  Copyright © 2016 Pingyu Xue. All rights reserved.
 //
 
 #include "storage_mgr.h"
 #include "stdio.h"
-
 #include "string.h"
 #include "stdlib.h"
-
-
 /**************************************************************************************
  *Function Name: initStorageManager
  *
@@ -55,10 +52,10 @@ extern void initStorageManager (void)
  *              Date                  Name                                Content
  *              ----------            ------------------------------      ---------------
  *              9/14/2016             Uday Tak <utak@hawk.iit.edu>        first create
- *             9/20/2016              Pingyu Xue<pxue2@hawk.iit.edu>      rewrite the code
+ *              9/20/2016             Pingyu Xue<pxue2@hawk.iit.edu>      rewrite 
  **************************************************************************************/
 
-//
+// first create by Uday
 //extern RC createPageFile (char *fileName)
 //{
 //    File* fptr;
@@ -95,7 +92,7 @@ extern void initStorageManager (void)
 //    return RC_OK;
 //}
 
-
+// Rewrite by Pingyu Xue
 RC createPageFile(char *fileName){
     
     // pointer of the file, Memory size of the page.
@@ -162,8 +159,9 @@ RC createPageFile(char *fileName){
  *              Date                  Name                                Content
  *              ----------            ------------------------------      ---------------
  *              9/15/2016             Uday Tak <utak@hawk.iit.edu>        first create
- *              9/20/2016             Pingyu Xue<pxue2@hawk.iit.edu>      rewrite code
+ *              9/20/2016             Pingyu Xue<pxue2@hawk.iit.edu>      rewrite 
  **************************************************************************************/
+// first create by Uday
 //extern RC openPageFile (char *fileName, SM_FileHandle *fHandle)
 //{
 //    File* fptr;
@@ -210,7 +208,7 @@ RC createPageFile(char *fileName){
 //    
 //    return RC_OK;
 
-// rewrite:
+// Rewrite by Pingyu Xue:
 RC openPageFile (char *fileName, SM_FileHandle *fHandle){
     
     FILE *newFile;
@@ -230,7 +228,10 @@ RC openPageFile (char *fileName, SM_FileHandle *fHandle){
             // indicator got or not
             if( pageSize != 0){
                 
-                size_t modPageNum = pageSize/pageSize;
+                size_t modPageNum = pageSize/pageSize; 
+                /*(Question : Uday Tak) pageSize/pageSize will always return 1. so need to make changes in the above statement.
+                    (Answer : )
+                */
                 
                 // calculate the page number for the totalPageNum
                 if (modPageNum == 0){
@@ -284,7 +285,7 @@ RC openPageFile (char *fileName, SM_FileHandle *fHandle){
  *              Date                  Name                                Content
  *              ----------            ------------------------------      ---------------
  *              9/17/2016             Uday Tak <utak@hawk.iit.edu>        first create
- *              9/20/2016             Pingyu Xue<pxue2k@hawk.iit.edu>     check fhandle and fix return request
+ *              9/20/2016             Pingyu Xue<pxue2k@hawk.iit.edu>     add 'check fhandle' and fix 'return' request
  **************************************************************************************/
 
 
@@ -305,7 +306,7 @@ RC closePageFile (SM_FileHandle *fHandle)
     
     
     // Question( by Pingyu Xue): should free memeory in this function ?
-    // Answer  (by ):
+    // Answer  (by Uday Tak): No. memory is not allocated at this step using calloc  so no need to free the memory.
 }
 
 /**************************************************************************************
@@ -328,7 +329,7 @@ RC closePageFile (SM_FileHandle *fHandle)
  *              9/18/2016             Uday Tak <utak@hawk.iit.edu>        first create
  *              9/20/2016             Pingyu Xue<pxue2k@hawk.iit.edu>     rewrite
  **************************************************************************************/
-
+//first create by Uday
 //extern RC destroyPageFile (char *fileName)
 //{
 //    fileRemoveFlag = remove(fileName);
@@ -340,7 +341,7 @@ RC closePageFile (SM_FileHandle *fHandle)
 //    return RC_OK;
 //}
 
-
+// Rewrite by Pingyu Xue:
 RC destroyPageFile (char *fileName)
 {
     if (fileName == NULL){
@@ -348,6 +349,10 @@ RC destroyPageFile (char *fileName)
     }
     
     int removerFile = 1;
+    /* (Question : Uday Tak) No need to assign any value to removeFile. if remove is successful it returns 0
+                            if it returns anything else apart from 0 that means operation was unsuccessful. 
+        (Answer :)
+    */
     
     removerFile = remove(fileName);
     
@@ -384,42 +389,43 @@ RC destroyPageFile (char *fileName)
  *            Date                  Name                                Content
  *            ----------            ------------------------------      ---------------
  *            9/19/2016             Pingyu Xue <pxue2@hawk.iit.edu>      first create
- *            9/20/2016             Pingyu Xue <pxue2@hawk.iit.edu>      change border of readStatment
+ *            9/21/2016             Pingyu Xue <pxue2@hawk.iit.edu>      add limit for the vars 
  **************************************************************************************/
 
 
 RC readBlock(int pageNum, SM_FileHandle *fhandle, SM_PageHandle memPage)
 {
-    int seekpostion = 1 ;       // initialize the var
-    size_t readStatement = 0;  // initialize the var
+    int seekpostion = 1;       // initialize the var   : (add by PyX　09/21) 
+    size_t readStatement = 0;  // initialize the var   ：(add by PyX  09/21)
     
     if (fhandle== NULL){
         return RC_FILE_HANDLE_NOT_INIT;
     }
     
-    if (pageNum>=0 && fhandle->totalNumPages>pageNum){
+    if (pageNum >= 0 && fhandle->totalNumPages > pageNum) { // if pageNum only >0 , readFirstPage() will be error! (add by PyX  9/21)
         seekpostion=fseek(fhandle->mgmtInfo, sizeof(char)*PAGE_SIZE*pageNum, SEEK_SET);
         // Q1:??? offset= sizeof(char)  || Do we need the sizeof(char)?
         // Q4:??? why fandle->mamtInfo can be used for FILE *point?
         
-        if (seekpostion==0){
-            readStatement=fread(memPage, sizeof(char), PAGE_SIZE, fhandle->mgmtInfo);
-            // Q2:???  size_t sizeof(char)  ||
-            
-            if (readStatement != 0){   //change from page_size
-                fhandle->curPagePos=pageNum;
+        if (seekpostion == 0){
+            readStatement = fread(memPage, sizeof(char), PAGE_SIZE, fhandle->mgmtInfo);
+        // Q2:???  size_t sizeof(char)  ||
+            if (readStatement != 0){ 
+                // if readStatment only ==  PAGE_SIZE, how about the file material less than a PAGE_SIZE?
+                // Q5: ??? Should the read material be the size of PAGE_SIZE ?　    09/21
+                fhandle->curPagePos = pageNum;
                 return RC_OK;
             }
-            // Q3: how to check the fread() have the right result ?
-            else
+        // Q3: how to check the fread() have the right result ?
+            else {
                 return RC_READ_FAILED;
-        }
-        else
-            return RC_SET_POINTER_FAILED;
-        
-    }
-    else
+            }
+        } else {
+            return RC_SET_POINTER_FAILED;   // channge to RC_FUNC_Fseek_ERROR    9/21
+        }       
+    } else {
         return RC_READ_NON_EXISTING_PAGE;
+    }
 }
 
 
@@ -441,11 +447,11 @@ RC readBlock(int pageNum, SM_FileHandle *fhandle, SM_PageHandle memPage)
  **************************************************************************************/
 
 extern int getBlockPos(SM_FileHandle *fhandle){
-    if (fhandle != NULL){
+    if (fhandle != NULL) {
         return fhandle->curPagePos;
-    }
-    else
+    } else {
         return RC_FILE_HANDLE_NOT_INIT;
+    }
 }
 
 /**************************************************************************************
@@ -468,9 +474,8 @@ extern int getBlockPos(SM_FileHandle *fhandle){
  **************************************************************************************/
 
 RC readFirstBlock(SM_FileHandle *fhandle, SM_PageHandle mempage)
-{
-    
-    if (fhandle!= NULL){
+{  
+    if (fhandle != NULL){
         return readBlock(0, fhandle, mempage);
         
     }
@@ -499,11 +504,11 @@ RC readFirstBlock(SM_FileHandle *fhandle, SM_PageHandle mempage)
 
 RC readPreviousBlock(SM_FileHandle *fhandle, SM_PageHandle mempage)
 {
-    // Does it have previous block?
-    if (fhandle!=NULL){
-        if (fhandle->curPagePos!=0){
+// Does it have previous block?
+    if (fhandle != NULL){
+        if (fhandle->curPagePos != 0){
             int currentPage= (fhandle->curPagePos)-1;
-            return readBlock( currentPage, fhandle, mempage);
+            return readBlock(currentPage, fhandle, mempage);
         }
         else
             return RC_READ_NON_EXISTING_PAGE;
@@ -534,7 +539,7 @@ RC readCurrentBlock(SM_FileHandle *fhandle, SM_PageHandle mempage)
 {
     if (fhandle != NULL)
     {
-        int currentPage=fhandle->curPagePos;
+        int currentPage = fhandle->curPagePos;
         return readBlock(currentPage, fhandle, mempage);
     }
     else
@@ -562,10 +567,10 @@ RC readCurrentBlock(SM_FileHandle *fhandle, SM_PageHandle mempage)
 
 RC readNextBlock(SM_FileHandle *fhandle, SM_PageHandle mempage)
 {
-    //    Does it have next block?
+//    Does it have next block?
     if (fhandle != NULL){
-        if(fhandle->curPagePos < fhandle->totalNumPages){
-            int currentPage= (fhandle->curPagePos)+1;
+        if(fhandle->curPagePos < fhandle->totalNumPages) {
+            int currentPage = (fhandle->curPagePos) + 1;
             return readBlock(currentPage, fhandle, mempage);
         }
         else
@@ -592,32 +597,182 @@ RC readNextBlock(SM_FileHandle *fhandle, SM_PageHandle mempage)
  *            Date                  Name                                Content
  *            ----------            ------------------------------      ---------------
  *            9/19/2016             Pingyu Xue <pxue2@hawk.iit.edu>      first create
+ *            9/19/2016             Hanqiao Lu <hlu22@hawk.iit.edu>    add edge case, improve coding style 
  **************************************************************************************/
 
 
 RC readLastBlock(SM_FileHandle *fhandle, SM_PageHandle mempage){
-    if(fhandle != NULL){
-        return readBlock(fhandle->totalNumPages, fhandle, mempage);
+    if (fhandle == NULL) {
+        return RC_FILE_HANDLE_NOT_INIT;
+    }
+    if (mempage == NULL) {
+        return RC_NO_SUCH_PAGE_IN_BUFF;
+    }
+    return readBlock(fhandle->totalNumPages, fhandle, mempage);
+}
+
+/**************************************************************************************
+ *Function Name: writeBlock
+ *
+ *Description: Write a page to disk using absolute position.
+ *            
+ *            
+ *Parameters:
+ *            int pageNum  The number of page user want to write
+ *            SM_FileHandle *fHandle: A pointer to a file structure contains metadata about file
+ *            SM_PageHandle memPage: the location where the block will be stored in memory
+ *Return:
+ *            RC_OK
+ *Author:
+ *            Hanqiao Lu
+ *Hisory:
+ *            Date                  Name                                Content
+ *            ----------            ------------------------------      ---------------
+ *            9/19/2016             Hanqiao Lu <hlu22@hawk.iit.edu>      first create
+ **************************************************************************************/
+
+
+RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
+    int setSuccess;
+    size_t writeState;
+    
+    if (fhandle == NULL) {
+        return RC_FILE_HANDLE_NOT_INIT;
+    }
+
+    if (memPage ==  NULL) {
+        return RC_NO_SUCH_PAGE_IN_BUFF;
+    }
+    
+    if (pageNum <= 0 || fhandle->totalNumPages < pageNum) {
+        return RC_READ_NON_EXISTING_PAGE;
+    }
+
+    setSuccess = fseek(fhandle->mgmtInfo, sizeof(char) * PAGE_SIZE * pageNum, SEEK_SET);
+    if (setSuccess != 0) {
+        return RC_SET_POINTER_FAILED;
+    }
+
+    writeState = fwrite(memPage, sizeof(char), PAGE_SIZE, fhandle->mgmtInfo);
+    if (writeState != PAGE_SIZE) {
+        return RC_WRITE_FAILED;
+    }
+    
+    fHandle->curPagePos = pageNum;
+    return RC_OK;
+}
+
+
+/**************************************************************************************
+ *Function Name: writeBlock
+ *
+ *Description: Write the current page to disk using absolute position.
+ *            
+ *            
+ *Parameters:
+ *            SM_FileHandle *fHandle: A pointer to a file structure contains metadata about file
+ *            SM_PageHandle memPage: the location where the block will be stored in memory
+ *Return:
+ *            RC_OK
+ *Author:
+ *            Hanqiao Lu
+ *Hisory:
+ *            Date                  Name                                Content
+ *            ----------            ------------------------------      ---------------
+ *            9/19/2016             Hanqiao Lu <hlu22@hawk.iit.edu>      first create
+ **************************************************************************************/
+RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
+    if (fHandle == NULL) {
+        return RC_FILE_HANDLE_NOT_INIT;
+    }
+    if (memPage == NULL) {
+        return RC_NO_SUCH_PAGE_IN_BUFF;
+    }
+    return writeBlock(fHandle->curPagePos, fHandle, memPage);
+}
+
+
+
+/**************************************************************************************
+ *Function Name: appendEmptyBlock
+ *
+ *Description: Increase the number of pages in the file by one by adding an empty page at the end of file and filling it with zero bytes.
+ *                        
+ *Parameters:
+ *            SM_FileHandle *fHandle: A pointer to a file structure containing metadata about file
+ *Return:
+ *            retstat - variable of type RC which contains return values obtained from checking conditions such as file write successful or not.
+ *Author:
+ *            Vaibhav Uday Hongal
+ *History:
+ *            Date                  Name                                              Content
+ *            ----------            -----------------------------------------         ---------------
+ *            9/19/2016             Vaibhav Uday Hongal <vhongal@hawk.iit.edu>        first create
+ *
+ **************************************************************************************/
+RC appendEmptyBlock(SM_FileHandle *fHandle)
+{
+    RC retstat;
+    int fileseekstatus, filewritestatus;
+    SM_PageHandle blankpage = (SM_PageHandle *)calloc(PAGE_SIZE, sizeof(char)); 
+    fileseekstatus = fseek(fHandle->mgmtInfo, (fHandle->totalNumPages + 1)*PAGE_SIZE*sizeof(char), SEEK_SET);
+    if(fileseekstatus != 0)
+    {
+        retstat = RC_SET_POINTER_FAILED;
     }
     else
-        return RC_FILE_HANDLE_NOT_INIT;
+    {
+        filewritestatus = fwrite(blankpage, sizeof(char), PAGE_SIZE, fHandle->mgmtInfo);
+        if(filewritestatus != PAGE_SIZE)
+            retstat = RC_WRITE_FAILED;
+        else
+            fHandle->totalNumPages += 1;
+            fHandle->curPagePos = fHandle->totalNumPages;
+            retstat = RC_OK;
+    }
+    free(blankpage);
+    return retstat;
+}
+
+
+
+/**************************************************************************************
+ *Function Name: ensureCapacity
+ *
+ *Description: If the file has less than numberOfPages pages then increase them to numberOfPages.
+ *                        
+ *Parameters:
+ *            int numberOfPages: The input value to check the number of pages in file and ensure its set to numberOfPages.   
+ *            SM_FileHandle *fHandle: A pointer to a file structure containing metadata about file
+ *Return:
+ *            retstat - variable of type RC which contains return values obtained from checking conditions such as file write successful or not
+                        or RC_OK if everything is okay.
+ *Author:
+ *            Vaibhav Uday Hongal
+ *History:
+ *            Date                  Name                                              Content
+ *            ----------            -----------------------------------------         ---------------
+ *            9/19/2016             Vaibhav Uday Hongal <vhongal@hawk.iit.edu>        first create
+ *
+ **************************************************************************************/
+RC ensureCapacity(int numberOfPages, SM_FileHandle *fHandle)
+{
+    RC retstat;
+    int i, n = 0;
+    if(fHandle->totalNumPages < numberOfPages)
+    {
+        n = numberOfPages - fHandle->totalNumPages;
+        for (i=0; i<n; i++)
+            retstat = appendEmptyBlock(fHandle);
+    }
+    if(retstat != RC_OK)
+    {
+        return retstat;
+    }   
+    return RC_OK;
 }
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/************************************END OF FUNCTIONS********************************/

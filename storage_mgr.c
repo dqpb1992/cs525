@@ -644,16 +644,16 @@ RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
         return RC_NO_SUCH_PAGE_IN_BUFF;
     }
     
-    if (pageNum <= 0 || fhandle->totalNumPages < pageNum) {
+    if (pageNum <= 0 || fHandle->totalNumPages < pageNum) {
         return RC_READ_NON_EXISTING_PAGE;
     }
 
-    setSuccess = fseek(fhandle->mgmtInfo, sizeof(char) * PAGE_SIZE * pageNum, SEEK_SET);
+    setSuccess = fseek(fHandle->mgmtInfo, sizeof(char) * PAGE_SIZE * pageNum, SEEK_SET);
     if (setSuccess != 0) {
         return RC_SET_POINTER_FAILED;
     }
 
-    writeState = fwrite(memPage, sizeof(char), PAGE_SIZE, fhandle->mgmtInfo);
+    writeState = fwrite(memPage, sizeof(char), PAGE_SIZE, fHandle->mgmtInfo);
     if (writeState != PAGE_SIZE) {
         return RC_WRITE_FAILED;
     }

@@ -290,32 +290,51 @@ RC openPageFile (char *fileName, SM_FileHandle *fHandle){
  **************************************************************************************/
 
 
+// RC closePageFile (SM_FileHandle *fHandle)
+// {
+//     if (fHandle == NULL){
+//         return RC_FILE_HANDLE_NOT_INIT;
+//     }
+//    test flag 1:
+//    printf("close test 1\n");
+    
+//  //   Note(Pingyu Xue)this fucntion is wrong
+//    int fileCloseFlag = fclose(fHandle->mgmtInfo);
+
+//    test flage 2:
+//   printf("close test 2\n");
+
+
+//     if (fileCloseFlag != 0)
+//     {
+//         return RC_FILE_CLOSE_ERROR;
+//     }
+   
+//     return RC_OK;
+    
+    
+//     // Question( by Pingyu Xue): should free memeory in this function ?
+//     // Answer  (by Uday Tak): No. memory is not allocated at this step using calloc  so no need to free the memory.
+// }
+
+
 RC closePageFile (SM_FileHandle *fHandle)
 {
     if (fHandle == NULL){
         return RC_FILE_HANDLE_NOT_INIT;
     }
- //   test flag 1:
- //   printf("close test 1\n");
-    
-    //Note(Pingyu Xue)this fucntion is wrong
- //   int fileCloseFlag = fclose(fHandle->mgmtInfo);
-
- //   test flage 2:
- //  printf("close test 2\n");
-
 
     fHandle->totalNumPages = 0;
+
     fHandle->curPagePos = 0;
+
     fHandle->fileName = NULL;
+
     fHandle->mgmtInfo = NULL;
 
-    // if (fileCloseFlag != 0)
-    // {
-    //     return RC_FILE_CLOSE_ERROR;
-    // }
-   
+
     return RC_OK;
+
     
     
     // Question( by Pingyu Xue): should free memeory in this function ?
@@ -411,7 +430,7 @@ RC destroyPageFile (char *fileName)
 RC readBlock(int pageNum, SM_FileHandle *fhandle, SM_PageHandle memPage)
 {
     int seekpostion = 1;       // initialize the var   : (add by PyX　09/21) 
-    size_t readStatement = 0;  // initialize the var   ：(add by PyX  09/21)
+    size_t readStatement = 0;  // initialize the var   ：(add by PyX 09/21)
     
     if (fhandle== NULL){
         return RC_FILE_HANDLE_NOT_INIT;
@@ -429,6 +448,8 @@ RC readBlock(int pageNum, SM_FileHandle *fhandle, SM_PageHandle memPage)
                 // if readStatment only ==  PAGE_SIZE, how about the file material less than a PAGE_SIZE?
                 // Q5: ??? Should the read material be the size of PAGE_SIZE ?　    09/21 Ans:( Uday) : yes read material always of size page
                 fhandle->curPagePos = pageNum;
+
+
                 return RC_OK;
             }
         // Q3: how to check the fread() have the right result ? A:(uday) compare the length may be
@@ -490,12 +511,14 @@ extern int getBlockPos(SM_FileHandle *fhandle){
 
 RC readFirstBlock(SM_FileHandle *fhandle, SM_PageHandle mempage)
 {  
-    if (fhandle != NULL){
-        return readBlock(0, fhandle, mempage);
-        
-    }
-    else
-        return RC_FILE_HANDLE_NOT_INIT;
+	// printf("test 1\n");
+	// if (fhandle != NULL){
+ //        return readBlock(0, fhandle, mempage);     
+ //    }
+ //    else
+ //        return RC_FILE_HANDLE_NOT_INIT;
+
+	return readBlock(0,fhandle,mempage);
 }
 
 /**************************************************************************************
@@ -644,6 +667,7 @@ RC readLastBlock(SM_FileHandle *fhandle, SM_PageHandle mempage){
  *            Date                  Name                                Content
  *            ----------            ------------------------------      ---------------
  *            9/19/2016             Hanqiao Lu <hlu22@hawk.iit.edu>      first create
+ *            9/25/2016             Pingyu Xue <pxue2@hawk.iit.edu>      test case fixing
  **************************************************************************************/
 
 
@@ -651,6 +675,7 @@ RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
     int setSuccess;
     size_t writeState;
     
+    //test case :
     if (fHandle == NULL) {
         return RC_FILE_HANDLE_NOT_INIT;
     }
@@ -659,19 +684,28 @@ RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
         return RC_NO_SUCH_PAGE_IN_BUFF;
     }
     
-    if (pageNum <= 0 || fHandle->totalNumPages < pageNum) {
+
+    // change " pageNum <= 0 " to  "pageNum< 0 "   Pingyu Xue 9/25
+    if (pageNum < 0 || fHandle->totalNumPages < pageNum) {
         return RC_READ_NON_EXISTING_PAGE;
     }
 
+    // test case: 
     setSuccess = fseek(fHandle->mgmtInfo, sizeof(char) * PAGE_SIZE * pageNum, SEEK_SET);
     if (setSuccess != 0) {
         return RC_SET_POINTER_FAILED;
     }
 
+    // test case;
+
     writeState = fwrite(memPage, sizeof(char), PAGE_SIZE, fHandle->mgmtInfo);
-    if (writeState != PAGE_SIZE) {
+
+    // change  "writeState != PAGE_SIZE" to "writeState != 0" Pingyu Xue 9/25
+    if (writeState != 0) {
         return RC_WRITE_FAILED;
     }
+
+    // test case :
     
     fHandle->curPagePos = pageNum;
     return RC_OK;

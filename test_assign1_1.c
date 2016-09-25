@@ -77,24 +77,35 @@ testSinglePageContent(void)
   // read first page into handle
   TEST_CHECK(readFirstBlock (&fh, ph));
   // the page should be empty (zero bytes)
+
   for (i=0; i < PAGE_SIZE; i++)
     ASSERT_TRUE((ph[i] == 0), "expected zero byte in first page of freshly initialized page");
   printf("first block was empty\n");
-    
+
+  // test:
   // change ph to be a string and write that one to disk
   for (i=0; i < PAGE_SIZE; i++)
     ph[i] = (i % 10) + '0';
+
+
   TEST_CHECK(writeBlock (0, &fh, ph));
   printf("writing first block\n");
 
+  // test: 
+  printf("test point line104\n");
+
   // read back the page containing the string and check that it is correct
   TEST_CHECK(readFirstBlock (&fh, ph));
+
+  printf("test point line 109\n");
+
   for (i=0; i < PAGE_SIZE; i++)
     ASSERT_TRUE((ph[i] == (i % 10) + '0'), "character in page read from disk is the one we expected.");
   printf("reading first block\n");
 
   // destroy new page file
   TEST_CHECK(destroyPageFile (TESTPF));  
-  
+
   TEST_DONE();
+
 }

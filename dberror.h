@@ -38,15 +38,15 @@ typedef int RC;
 #define RC_RM_NO_MORE_TUPLES 203
 #define RC_RM_NO_PRINT_FOR_DATATYPE 204
 #define RC_RM_UNKOWN_DATATYPE 205
+#define RC_FILE_CLOSE_FAILED 206  // add by pingyu Xue 9/25
 
 #define RC_IM_KEY_NOT_FOUND 300
 #define RC_IM_KEY_ALREADY_EXISTS 301
 #define RC_IM_N_TO_LAGE 302
 #define RC_IM_NO_MORE_ENTRIES 303
 
-#define RC_UNPIN_ERROR 401
-#define RC_NO_FREE_BUFFER_ERROR  402
-#define RC_NO_SUCH_PAGE_IN_BUFF  403
+
+#define RC_NO_SUCH_PAGE_IN_BUFF  401  // add by pingyu xue 9/25
 
 
 #define RC_FUNC_Fseek_ERROR 501   // add by pingyu xue 09/21

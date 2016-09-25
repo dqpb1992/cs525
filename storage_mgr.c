@@ -212,7 +212,7 @@ RC createPageFile(char *fileName){
 RC openPageFile (char *fileName, SM_FileHandle *fHandle){
     
     FILE *newFile;
-    size_t pageSize;
+    size_t pageSize = 1;
     int seekResult;
     
     newFile = fopen(fileName, "r");
@@ -228,13 +228,13 @@ RC openPageFile (char *fileName, SM_FileHandle *fHandle){
             // indicator got or not
             if( pageSize != 0){
                 
-                size_t modPageNum = pageSize/pageSize; 
+                size_t modPageNum = pageSize/PAGE_SIZE; 
                 /*(Question : Uday Tak) pageSize/pageSize will always return 1. so need to use some different logic.
                     (Answer : )
                 */
                 
                 // calculate the page number for the totalPageNum
-                if (modPageNum == 0){
+                if (modPageNum){
                     fHandle->totalNumPages =(int) modPageNum;    // test 3: size_t mod num 
                 }
                 else{
@@ -285,7 +285,8 @@ RC openPageFile (char *fileName, SM_FileHandle *fHandle){
  *              Date                  Name                                Content
  *              ----------            ------------------------------      ---------------
  *              9/17/2016             Uday Tak <utak@hawk.iit.edu>        first create
- *              9/20/2016             Pingyu Xue<pxue2k@hawk.iit.edu>     add 'check fhandle' and fix 'return' request
+ *              9/20/2016             Pingyu Xue<pxue2@hawk.iit.edu>     add 'check fhandle' and fix 'return' request
+ *              9/25/2016             Pingyu Xue<pxue2@hawk.iit.edu>      rewrite 
  **************************************************************************************/
 
 
@@ -294,14 +295,26 @@ RC closePageFile (SM_FileHandle *fHandle)
     if (fHandle == NULL){
         return RC_FILE_HANDLE_NOT_INIT;
     }
+ //   test flag 1:
+ //   printf("close test 1\n");
     
-    
-    int fileCloseFlag = fclose(fHandle->mgmtInfo);
-    
-    if (fileCloseFlag != 0)
-    {
-        return RC_FILE_CLOSE_ERROR;
-    }
+    //Note(Pingyu Xue)this fucntion is wrong
+ //   int fileCloseFlag = fclose(fHandle->mgmtInfo);
+
+ //   test flage 2:
+ //  printf("close test 2\n");
+
+
+    fHandle->totalNumPages = 0;
+    fHandle->curPagePos = 0;
+    fHandle->fileName = NULL;
+    fHandle->mgmtInfo = NULL;
+
+    // if (fileCloseFlag != 0)
+    // {
+    //     return RC_FILE_CLOSE_ERROR;
+    // }
+   
     return RC_OK;
     
     
@@ -347,15 +360,17 @@ RC destroyPageFile (char *fileName)
     if (fileName == NULL){
         return RC_FILE_NOT_FOUND;
     }
+
     
     int removerFile = 1;
     /* (Question : Uday Tak) No need to assign any value to removeFile. if remove is successful it returns 0
                             if it returns anything else apart from 0 that means operation was unsuccessful. 
         (Answer :)
     */
+
     
     removerFile = remove(fileName);
-    
+
     if (removerFile == 0){
         return RC_OK;
     }
@@ -714,6 +729,7 @@ RC appendEmptyBlock(SM_FileHandle *fHandle)
 {
     RC retstat;
     int fileseekstatus, filewritestatus;
+
     SM_PageHandle blankpage = (SM_PageHandle *)calloc(PAGE_SIZE, sizeof(char)); 
     fileseekstatus = fseek(fHandle->mgmtInfo, (fHandle->totalNumPages + 1)*PAGE_SIZE*sizeof(char), SEEK_SET);
     if(fileseekstatus != 0)

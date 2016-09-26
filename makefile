@@ -19,4 +19,4 @@ test_assign1_1.o : test_assign1_1.c
 .PHONY : clean
 
 clean :
-	rm *.o test1
+	rm  test1

@@ -425,6 +425,8 @@ RC destroyPageFile (char *fileName)
  *            ----------            ------------------------------      ---------------
  *            9/19/2016             Pingyu Xue <pxue2@hawk.iit.edu>      first create
  *            9/21/2016             Pingyu Xue <pxue2@hawk.iit.edu>      add limit for the vars 
+ *            9/25/2016             Pingyu Xue <pxue2@hawk.iit.edu>      rewrite
+ *            9/26/2016             Pingyu Xue <pxue2@hawk.iit.edu>      rewrite
  **************************************************************************************/
 
 
@@ -469,63 +471,97 @@ RC destroyPageFile (char *fileName)
 //     }
 // }
 
+
+// rewrite 9/25
 RC readBlock(int pageNum, SM_FileHandle *fhandle, SM_PageHandle memPage)
 {
-    // int seekpostion = 1;       // initialize the var   : (add by PyX　09/21) 
-    // size_t readStatement = 0;  // initialize the var   ：(add by PyX  09/21)
+  //   int seekpostion = 1;       // initialize the var   : (add by PyX　09/21) 
+  //   size_t readStatement = 0;  // initialize the var   ：(add by PyX  09/21)
     
-    // if (fhandle== NULL){
-    //     return RC_FILE_HANDLE_NOT_INIT;
-    // }
+  //   // if (fhandle== NULL){
+  //   //     return RC_FILE_HANDLE_NOT_INIT;
+  //   // }
 
-    // if (memPage = NULL){
-    // 	return RC_mempage_null;
-    // }
+  //   // delete becasue the test file
+  //   // if (memPage = NULL){
+  //   // 	return RC_mempage_null;
+  //   // }
     
-    // FILE * fp;
+  //   FILE *fp;
 
-    // fp=fopen(fhandle->fileName,'r');
+  //   fp=fopen(fhandle->fileName,'r');
 
-    // if (pageNum >= 0 && fhandle->totalNumPages > pageNum) { // if pageNum only >0 , readFirstPage() will be error! (add by PyX  9/21)
-    //     seekpostion=fseek(fp, sizeof(char)*PAGE_SIZE*pageNum, SEEK_SET);
-    //     // Q1:??? offset= sizeof(char)  || Do we need the sizeof(char)? Ans : (Uday) - yes. 1.good programing practice 2. instead of char in future u might use nchar
-    //     // Q4:??? why fandle->mamtInfo can be used for FILE *point? Ans:(Uday) - file pointer is different than filename 
+  //    // if (pageNum >= 0 && fhandle->totalNumPages > pageNum) { // if pageNum only >0 , readFirstPage() will be error! (add by PyX  9/21)
+  // //       seekpostion=fseek(fp, sizeof(char)*PAGE_SIZE*pageNum, SEEK_SET);
+  //          // seekpostion=fseek(fp, PAGE_SIZE*pageNum, SEEK_SET);
+  //   int offset = PAGE_SIZE*pageNum;
+
+  //         fseek(fp, offset, SEEK_SET);
+  //       // Q1:??? offset= sizeof(char)  || Do we need the sizeof(char)? Ans : (Uday) - yes. 1.good programing practice 2. instead of char in future u might use nchar
+  //       // Q4:??? why fandle->mamtInfo can be used for FILE *point? Ans:(Uday) - file pointer is different than filename 
         
-    //     if (seekpostion == 0){
-    //         readStatement = fread(memPage, sizeof(char), PAGE_SIZE, fp);
-    //     // Q2:???  size_t sizeof(char)  ||
-    //         if (readStatement != 0){ 
-    //             // if readStatment only ==  PAGE_SIZE, how about the file material less than a PAGE_SIZE?
-    //             // Q5: ??? Should the read material be the size of PAGE_SIZE ?　    09/21 Ans:( Uday) : yes read material always of size page
-    //             fhandle->curPagePos = pageNum;
+  //       // if (seekpostion == 0){
+  //           // readStatement = fread(memPage, sizeof(char), PAGE_SIZE, fp);
+  //        fread(memPage, sizeof(char), PAGE_SIZE, fp);
+  //       // Q2:???  size_t sizeof(char)  ||
+  //           // if (readStatement != 0){ 
+  //               // if readStatment only ==  PAGE_SIZE, how about the file material less than a PAGE_SIZE?
+  //               // Q5: ??? Should the read material be the size of PAGE_SIZE ?　    09/21 Ans:( Uday) : yes read material always of size page
+  //               fhandle->curPagePos = pageNum;
 
-    //             return RC_OK;
-    //         }
-    //     // Q3: how to check the fread() have the right result ? A:(uday) compare the length may be
-    //         else {
-    //             return RC_READ_FAILED;
-    //         }
-    //     } else {
-    //         return RC_SET_POINTER_FAILED;   // channge to RC_FUNC_Fseek_ERROR    9/21
-    //     }       
-    // } else {
-    //     return RC_READ_NON_EXISTING_PAGE;
-    // }
+  //               fclose(fp);
 
-    if(pageNum>fhandle->totalNumPages-1||pageNum<0)
-		return RC_READ_NON_EXISTING_PAGE;
-	else
-	{
+  //               return RC_OK;
+  //   //       }
+
+  //   //     Q3: how to check the fread() have the right result ? A:(uday) compare the length may be
+  //   //         else {
+  //   //             return RC_READ_FAILED;
+  //   //         }
+  //   //     } else {
+  //   //         return RC_SET_POINTER_FAILED;   // channge to RC_FUNC_Fseek_ERROR    9/21
+  //   //     }       
+  //   // } else {
+  //   //     return RC_READ_NON_EXISTING_PAGE;
+  //   // }
+
+  //   if(pageNum>fhandle->totalNumPages-1||pageNum<0)
+  //        return RC_READ_NON_EXISTING_PAGE;
+
+
+// rewite  9/26
+	int seekpostion ;       
+    size_t readStatement ;
+	
 		FILE *fp;
+
 		fp=fopen(fhandle->fileName,"r");
-		int offset;
-		offset=fhandle->curPagePos*PAGE_SIZE;
-		fseek(fp,offset,SEEK_SET);
-		fread(memPage,sizeof(char),PAGE_SIZE,fp);
-		fhandle->curPagePos=pageNum;
-		fclose(fp);
-		return RC_OK;
-	}
+
+		if (fhandle== NULL){
+			return RC_FILE_HANDLE_NOT_INIT;
+		}
+
+		if (memPage = NULL){
+			return RC_mempage_null;
+		}
+
+		if (pageNum < 0 && fhandle->totalNumPages < pageNum){
+			return RC_READ_NON_EXISTING_PAGE;
+		}
+
+
+		
+		if (fseek(fp,fhandle->curPagePos*PAGE_SIZE,SEEK_SET) == 0){
+
+		     if(fread(memPage,sizeof(char),PAGE_SIZE,fp)){
+		     	fhandle->curPagePos=pageNum;
+		     	fclose(fp);
+
+		     	return RC_OK;
+
+		     }
+		 }			
+	
 }
 
 /**************************************************************************************
@@ -574,10 +610,9 @@ extern int getBlockPos(SM_FileHandle *fhandle){
 
 RC readFirstBlock(SM_FileHandle *fhandle, SM_PageHandle mempage)
 {  
-	printf("test 1\n");
+
 	if (fhandle != NULL){
-		printf("%c\n",mempage );
-		printf("test\n");
+
         return readBlock(0, fhandle, mempage);     
     }
     else
@@ -734,47 +769,68 @@ RC readLastBlock(SM_FileHandle *fhandle, SM_PageHandle mempage){
  *            ----------            ------------------------------      ---------------
  *            9/19/2016             Hanqiao Lu <hlu22@hawk.iit.edu>      first create
  *            9/25/2016             Pingyu Xue <pxue2@hawk.iit.edu>      test case fixing
+ *            9/26/2016             Pingyu Xue <pxue2@hawk.iit.edu>      fix function error and flaws
  **************************************************************************************/
 
 
 RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
     int setSuccess;
     size_t writeState;
+
+    // add the FILE pointer
+    FILE * fp;
+    fp = fopen(fHandle->fileName, "r+");
     
     //test case :
-    if (fHandle == NULL) {
-        return RC_FILE_HANDLE_NOT_INIT;
-    }
+    // if (fHandle == NULL) {
+    //     return RC_FILE_HANDLE_NOT_INIT;
+    // }
 
-    if (memPage ==  NULL) {
-        return RC_NO_SUCH_PAGE_IN_BUFF;
-    }
+    // if (memPage ==  NULL) {
+    //     return RC_NO_SUCH_PAGE_IN_BUFF;
+    // }
     
 
-    // change " pageNum <= 0 " to  "pageNum< 0 "   Pingyu Xue 9/25
-    if (pageNum < 0 || fHandle->totalNumPages < pageNum) {
-        return RC_READ_NON_EXISTING_PAGE;
-    }
+ //    // change " pageNum <= 0 " to  "pageNum< 0 "   Pingyu Xue 9/25
+ //    if (pageNum < 0 || fHandle->totalNumPages < pageNum) {
+ //        return RC_READ_NON_EXISTING_PAGE;
+ //    }
 
-    // test case: 
-    setSuccess = fseek(fHandle->mgmtInfo, sizeof(char) * PAGE_SIZE * pageNum, SEEK_SET);
+    // fix fHandle-> mgmInfo   to  fp  pingyuXue 0926
+    setSuccess = fseek(fp, sizeof(char) * PAGE_SIZE * pageNum, SEEK_SET);
     if (setSuccess != 0) {
         return RC_SET_POINTER_FAILED;
     }
 
-    // test case;
+ //    // fix fHandle-> mgmInfo to fp; Pingyu Xue  0926
+    writeState = fwrite(memPage, sizeof(char), PAGE_SIZE, fp);
 
-    writeState = fwrite(memPage, sizeof(char), PAGE_SIZE, fHandle->mgmtInfo);
-
-    // change  "writeState != PAGE_SIZE" to "writeState != 0" Pingyu Xue 9/25
-    if (writeState != 0) {
+    // change  "writeState != PAGE_SIZE" to "writeState =533= 0" Pingyu Xue 9/25
+    if (writeState == 0) {
         return RC_WRITE_FAILED;
     }
 
-    // test case :
-    
-    fHandle->curPagePos = pageNum;
-    return RC_OK;
+	// fclose(fp);
+
+
+ //    return RC_OK;
+
+ //    FILE *fp;
+ //    RC rv;
+
+	// fp=fopen(fHandle->fileName,"rb+");
+	// if(fseek(fp,pageNum * PAGE_SIZE, SEEK_SET) != 0){
+	// 	rv = RC_READ_NON_EXISTING_PAGE;	
+	// } else if (fwrite(memPage, PAGE_SIZE, 1, fp) != 1){
+	// 	rv = RC_WRITE_FAILED; 
+	// } else {
+	// 	fHandle->curPagePos=pageNum;		//Success write block, then curPagePos should be changed.
+	// 	rv = RC_OK;
+	// }
+
+	fclose(fp);
+
+	return RC_OK;
 }
 
 

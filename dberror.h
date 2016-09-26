@@ -28,6 +28,7 @@ typedef int RC;
 #define RC_READ_NON_EXISTING_PAGE 7
 #define RC_READ_FAILED 8
 #define RC_UNESPECTED_ERROR 9
+#define RC_mempage_null   10
 
 #define RC_SET_POINTER_FAILED 100
 #define RC_GET_NUMBER_OF_BYTES_FAILED 101

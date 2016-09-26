@@ -82,11 +82,14 @@ testSinglePageContent(void)
     ASSERT_TRUE((ph[i] == 0), "expected zero byte in first page of freshly initialized page");
   printf("first block was empty\n");
 
+  printf("test point line 85\n");
   // test:
   // change ph to be a string and write that one to disk
   for (i=0; i < PAGE_SIZE; i++)
     ph[i] = (i % 10) + '0';
 
+
+  printf("test point line 91\n");
 
   TEST_CHECK(writeBlock (0, &fh, ph));
   printf("writing first block\n");
@@ -109,5 +112,6 @@ testSinglePageContent(void)
 
   TEST_DONE();
 
+  printf("test out\n");
 
 }

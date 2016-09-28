@@ -27,4 +27,5 @@ test_assign1_2.o : test_assign1_2.c
 .PHONY : clean
 
 clean :
-	rm  test1
+	rm  test1 test2
+

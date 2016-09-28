@@ -4,6 +4,11 @@ base = dberror.o storage_mgr.o
 
 test : $(base) test_assign1_1.o
 	gcc -o test1 $(base) test_assign1_1.o
+	
+	rm *.o
+
+test2 : $(base) test_assign1_2.o
+	gcc -o test2 $(base) test_assign1_2.o
 	rm *.o
 
 
@@ -15,6 +20,9 @@ storage_mgr.o : storage_mgr.c
 
 test_assign1_1.o : test_assign1_1.c
 	gcc -c test_assign1_1.c -I .
+
+test_assign1_2.o : test_assign1_2.c
+	gcc -c test_assign1_2.c -I .
 
 .PHONY : clean
 
